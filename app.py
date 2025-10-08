@@ -420,17 +420,16 @@ def handle_text(event):
     pos = store.get(uid)
     weather = get_weather_by_latlon(pos["lat"], pos["lon"]) if pos else None
 
-    # テキスト
+    # テキスト（挨拶・季節・天気・感情の一言）
     reply = build_reply(text, weather, now)
 
-    # プレイリスト選択（時間・天気・感情ベース）
+    # 固定プレイリストを状況に合わせた“見出し”で紹介（URLは固定）
     emo = detect_emotion(text)
+    blk = time_block(now.hour)
     wtag = (weather or {}).get("tag")
-    key = recommend_playlist_key(wtag, now, emo)
-    pl = PLAYLISTS.get(key) or PLAYLISTS["default"]
+    pl_item = contextual_playlist_item(blk, wtag, emo)
 
-    # Flex + テキストで返す
-    flex = FlexSendMessage(alt_text="おすすめプレイリスト", contents=make_playlist_flex(pl))
+    flex = FlexSendMessage(alt_text="おすすめプレイリスト", contents=make_playlist_flex(pl_item))
     line_bot_api.reply_message(event.reply_token, [
         TextSendMessage(text=reply + "\n\n🎧 今日のおすすめプレイリストをどうぞ。"),
         flex
