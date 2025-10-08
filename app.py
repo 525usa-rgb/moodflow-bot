@@ -265,48 +265,48 @@ def build_reply(user_text: str, weather: Optional[Dict[str, Any]], now: dt.datet
 # YouTube プレイリスト（紹介用）
 # =============================
 # すべてあなたの LoFi Beats を指しています。別テーマができたら URL を差し替えてください。
-PLAYLISTS = {
-    "morning": {
-        "title": "Morning Flow – Chillhop for Focus",
-        "url": "https://www.youtube.com/playlist?list=PLTKjLZap9yJyabiXUYzwxnoKs7CFvCT8A",
-        "cover": "https://i.imgur.com/d8s5fPX.jpg",
-        "desc": "静かな朝の立ち上がりに。"
-    },
-    "rainy": {
-        "title": "Rainy Café – LoFi Jazz for Calm Days",
-        "url": "https://www.youtube.com/playlist?list=PLTKjLZap9yJyabiXUYzwxnoKs7CFvCT8A",
-        "cover": "https://i.imgur.com/0dR4n8f.jpg",
-        "desc": "雨音と合わせて落ち着くチル。"
-    },
-    "night": {
-        "title": "LoFi Beats – Chillhop & Jazzhop for Relaxation",
-        "url": "https://www.youtube.com/playlist?list=PLTKjLZap9yJyabiXUYzwxnoKs7CFvCT8A",
-        "cover": "https://i.imgur.com/2x5oH9K.jpg",
-        "desc": "一日の終わりに、ゆっくりと。"
-    },
-    "default": {
-        "title": "LoFi Beats – Nomadic Flow",
-        "url": "https://www.youtube.com/playlist?list=PLTKjLZap9yJyabiXUYzwxnoKs7CFvCT8A",
-        "cover": "https://i.imgur.com/2x5oH9K.jpg",
-        "desc": "穏やかな集中とリラックスに。"
-    }
-}
+# ====== 固定プレイリスト運用（URLは常に同じ） ======
+PLAYLIST_URL = "https://youtube.com/playlist?list=PLTKjLZap9yJyabiXUYzwxnoKs7CFvCT8A&si=iNmQRGT7Ii3JUg2_"
 
-def recommend_playlist_key(weather_tag: Optional[str], now: dt.datetime, emotion: Optional[str]) -> str:
-    """時間・天気・感情から、どのキーのプレイリストを出すか決定"""
+# タイトル・説明だけを状況で言い換える（URLは固定）
+def contextual_playlist_item(block: str, weather_tag: str | None, emotion: str | None) -> dict:
+    # デフォルト文言
+    title = "LoFi Beats – Nomadic Flow"
+    desc  = "穏やかな集中とリラックスに。"
+    cover = "https://img.youtube.com/vi/jfKfPfyJRdk/hqdefault.jpg"  # 任意で差し替えOK
+
+    # 時間帯
+    if block == "morning":
+        title = "Morning Flow – Chillhop for Focus"
+        desc  = "静かな朝の立ち上がりに。"
+    elif block == "evening":
+        title = "Evening Chill – LoFi for Wind Down"
+        desc  = "一日の終わりに、ゆっくりと。"
+    elif block == "night":
+        title = "Midnight LoFi – Slow & Cozy"
+        desc  = "夜更けはゆるく、深呼吸。"
+
+    # 天気
     if weather_tag in ("rain", "drizzle", "thunderstorm", "mist"):
-        return "rainy"
-    h = now.hour
+        title = "Rainy Café – LoFi Jazz for Calm Days"
+        desc  = "雨音といっしょに、やわらかく。"
+
+    # 感情
     if emotion in ("tired", "sad", "lonely", "anxious"):
-        return "night"
-    if 5 <= h < 12:
-        return "morning"
-    if 18 <= h <= 23:
-        return "night"
-    return "default"
+        title = "Calm & Warm – Gentle LoFi"
+        desc  = "肩の力を抜いて、やさしいトーンで。"
+    elif emotion in ("joy", "excited"):
+        title = "Upbeat Chill – Light & Groovy"
+        desc  = "気分に少し明るさを足していこう。"
+
+    return {
+        "title": title,
+        "url": PLAYLIST_URL,
+        "cover": cover,
+        "desc": desc
+    }
 
 def make_playlist_flex(item: dict) -> dict:
-    """YouTube プレイリストを表示するシンプルな Flex"""
     return {
         "type": "bubble",
         "hero": {
@@ -335,7 +335,6 @@ def make_playlist_flex(item: dict) -> dict:
             "flex": 0
         }
     }
-
 
 # =============================
 # ルーティング
